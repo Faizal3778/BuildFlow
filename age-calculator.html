@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Age Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9ff; /* Light blue-tinted white for theme */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 191, 255, 0.1); /* Subtle blue glow */
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #00BFFF; /* Bright blue */
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input[type="date"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #00BFFF;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        input[type="date"]:focus {
+            outline: none;
+            border-color: #0099CC; /* Darker blue on focus */
+            box-shadow: 0 0 5px rgba(0, 191, 255, 0.3);
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #00BFFF, #E0F7FF); /* Blue gradient */
+            border-radius: 8px;
+            color: white;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .result.hidden {
+            display: none;
+        }
+
+        .error {
+            color: #FF6B6B;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Age Calculator</h1>
+        <label for="birthdate">Enter your birthdate:</label>
+        <input type="date" id="birthdate" onchange="calculateAge()">
+        <div id="error" class="error"></div>
+        <div id="result" class="result hidden">
+            <p>You are <span id="years"></span> years, <span id="months"></span> months, and <span id="days"></span> days old.</p>
+        </div>
+    </div>
+
+    <script>
+        function exactAge(birthdate) {
+            let startDate = new Date(birthdate);
+            const endDate = new Date(); // Current date
+            if (startDate > endDate) {
+                return { years: 0, months: 0, days: 0, error: 'Birthdate cannot be in the future.' };
+            }
+
+            const startYear = startDate.getFullYear();
+            // Handle leap years for February
+            const february = (startYear % 4 === 0 && startYear % 100 !== 0) || startYear % 400 === 0 ? 29 : 28;
+            const daysInMonth = [31, february, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+            let yearDiff = endDate.getFullYear() - startYear;
+            let monthDiff = endDate.getMonth() - startDate.getMonth();
+            let dayDiff = endDate.getDate() - startDate.getDate();
+
+            if (monthDiff < 0) {
+                yearDiff--;
+                monthDiff += 12;
+            }
+
+            if (dayDiff < 0) {
+                if (monthDiff > 0) {
+                    monthDiff--;
+                } else {
+                    yearDiff--;
+                    monthDiff = 11;
+                }
+                dayDiff += daysInMonth[startDate.getMonth()];
+            }
+
+            return { years: yearDiff, months: monthDiff, days: dayDiff };
+        }
+
+        function calculateAge() {
+            const birthdateInput = document.getElementById('birthdate').value;
+            const errorDiv = document.getElementById('error');
+            const resultDiv = document.getElementById('result');
+            const yearsSpan = document.getElementById('years');
+            const monthsSpan = document.getElementById('months');
+            const daysSpan = document.getElementById('days');
+
+            errorDiv.textContent = '';
+            resultDiv.classList.add('hidden');
+
+            if (!birthdateInput) {
+                return;
+            }
+
+            const age = exactAge(birthdateInput);
+            if (age.error) {
+                errorDiv.textContent = age.error;
+                return;
+            }
+
+            yearsSpan.textContent = age.years;
+            monthsSpan.textContent = age.months;
+            daysSpan.textContent = age.days;
+            resultDiv.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
