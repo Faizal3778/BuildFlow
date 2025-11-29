@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Cropper - Build FLOW</title>
+    <style>
+        :root {
+            --bright-blue: #00BFFF;
+            --light-blue: #E0F7FA;
+            --white: #FFFFFF;
+            --gray: #6C757D;
+            --dark-gray: #343A40;
+            --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-gray);
+            background-color: var(--white);
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        /* Header */
+        header {
+            text-align: center;
+            padding: 2rem 0;
+            background: linear-gradient(135deg, var(--bright-blue), var(--light-blue));
+            color: var(--white);
+            margin-bottom: 2rem;
+        }
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        /* Upload Section */
+        .upload-section {
+            background: var(--white);
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .upload-area {
+            border: 2px dashed var(--bright-blue);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        .upload-area:hover {
+            border-color: #0099CC;
+            background: var(--light-blue);
+        }
+        .upload-area.dragover {
+            border-color: var(--bright-blue);
+            background: var(--light-blue);
+        }
+        #fileInput {
+            display: none;
+        }
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        /* Crop Section */
+        .crop-section {
+            position: relative;
+            background: var(--white);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            display: none;
+        }
+        .crop-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        .crop-image {
+            max-width: 100%;
+            max-height: 400px;
+            display: block;
+        }
+        .crop-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: crosshair;
+        }
+        .crop-selection {
+            position: absolute;
+            border: 2px dashed var(--bright-blue);
+            background: rgba(0, 191, 255, 0.1);
+            display: none;
+        }
+        .crop-selection.active {
+            display: block;
+        }
+        .crop-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--bright-blue);
+            border: 1px solid var(--white);
+            border-radius: 50%;
+        }
+        .crop-handle.nw { top: -5px; left: -5px; cursor: nwse-resize; }
+        .crop-handle.ne { top: -5px; right: -5px; cursor: nesw-resize; }
+        .crop-handle.sw { bottom: -5px; left: -5px; cursor: nesw-resize; }
+        .crop-handle.se { bottom: -5px; right: -5px; cursor: nwse-resize; }
+        /* Preview Section */
+        .preview-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        .preview-card {
+            background: var(--white);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+        .preview-card h3 {
+            color: var(--bright-blue);
+            margin-bottom: 1rem;
+        }
+        .preview-img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+        .preview-hidden {
+            display: none;
+        }
+        .file-info {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-top: 0.5rem;
+        }
+        /* Controls */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: var(--white);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+        button {
+            padding: 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .crop-btn {
+            background: var(--bright-blue);
+            color: var(--white);
+            border: none;
+        }
+        .crop-btn:hover {
+            background: #0099CC;
+        }
+        .crop-btn:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+        }
+        /* Download Section */
+        .download-section {
+            display: none;
+            background: var(--white);
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+        .download-btn {
+            background: var(--bright-blue);
+            color: var(--white);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+        .download-btn:hover {
+            background: #0099CC;
+        }
+        .crop-info {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            header h1 {
+                font-size: 1.5rem;
+            }
+            .preview-section {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            .controls {
+                padding: 1rem;
+            }
+            .crop-overlay {
+                cursor: default;
+            }
+            .crop-handle {
+                width: 15px;
+                height: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Image Cropper</h1>
+        <p>Crop your images by selecting a specific area</p>
+    </header>
+
+    <div class="container">
+        <section class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">🖼️</div>
+                <p>Drag & drop an image here or click to browse</p>
+                <input type="file" id="fileInput" accept="image/*">
+            </div>
+            <div id="originalInfo" class="file-info preview-hidden"></div>
+        </section>
+
+        <section class="crop-section" id="cropSection">
+            <div class="crop-container">
+                <img id="cropImage" class="crop-image" alt="Crop">
+                <div class="crop-overlay" id="cropOverlay"></div>
+                <div class="crop-selection" id="cropSelection">
+                    <div class="crop-handle nw"></div>
+                    <div class="crop-handle ne"></div>
+                    <div class="crop-handle sw"></div>
+                    <div class="crop-handle se"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="preview-section">
+            <div class="preview-card">
+                <h3>Original Image</h3>
+                <img id="originalPreview" class="preview-img preview-hidden" alt="Original">
+                <div id="originalSize" class="file-info"></div>
+            </div>
+            <div class="preview-card">
+                <h3>Cropped Image</h3>
+                <img id="croppedPreview" class="preview-img preview-hidden" alt="Cropped">
+                <div id="croppedSize" class="file-info"></div>
+            </div>
+        </section>
+
+        <div class="controls">
+            <button id="cropBtn" class="crop-btn" disabled>Crop Image</button>
+        </div>
+
+        <section class="download-section" id="downloadSection">
+            <h3>Download Your Cropped Image</h3>
+            <p>Click the button below to download the cropped version.</p>
+            <a id="downloadLink" class="download-btn" download="cropped-image.jpg">Download Image</a>
+            <div id="cropInfo" class="crop-info"></div>
+        </section>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const originalPreview = document.getElementById('originalPreview');
+        const croppedPreview = document.getElementById('croppedPreview');
+        const cropSection = document.getElementById('cropSection');
+        const cropImage = document.getElementById('cropImage');
+        const cropOverlay = document.getElementById('cropOverlay');
+        const cropSelection = document.getElementById('cropSelection');
+        const cropBtn = document.getElementById('cropBtn');
+        const downloadSection = document.getElementById('downloadSection');
+        const downloadLink = document.getElementById('downloadLink');
+        const originalInfo = document.getElementById('originalInfo');
+        const originalSize = document.getElementById('originalSize');
+        const croppedSize = document.getElementById('croppedSize');
+        const cropInfo = document.getElementById('cropInfo');
+
+        let originalImage = null;
+        let originalFile = null;
+        let croppedBlob = null;
+        let isCropping = false;
+        let startX, startY, cropWidth, cropHeight;
+
+        // Crop selection events
+        let isDragging = false;
+        let currentX, currentY, initialX, initialY;
+
+        cropOverlay.addEventListener('mousedown', startCrop);
+        cropOverlay.addEventListener('touchstart', startCrop, { passive: false });
+
+        function startCrop(e) {
+            e.preventDefault();
+            isCropping = true;
+            const rect = cropOverlay.getBoundingClientRect();
+            startX = (e.clientX || e.touches[0].clientX) - rect.left;
+            startY = (e.clientY || e.touches[0].clientY) - rect.top;
+            document.addEventListener('mousemove', dragCrop);
+            document.addEventListener('touchmove', dragCrop, { passive: false });
+            document.addEventListener('mouseup', endCrop);
+            document.addEventListener('touchend', endCrop);
+        }
+
+        function dragCrop(e) {
+            if (!isCropping) return;
+            e.preventDefault();
+            const rect = cropOverlay.getBoundingClientRect();
+            currentX = (e.clientX || e.touches[0].clientX) - rect.left;
+            currentY = (e.clientY || e.touches[0].clientY) - rect.top;
+            cropWidth = Math.abs(currentX - startX);
+            cropHeight = Math.abs(currentY - startY);
+            const left = Math.min(startX, currentX);
+            const top = Math.min(startY, currentY);
+            cropSelection.style.left = `${left}px`;
+            cropSelection.style.top = `${top}px`;
+            cropSelection.style.width = `${cropWidth}px`;
+            cropSelection.style.height = `${cropHeight}px`;
+            cropSelection.classList.add('active');
+        }
+
+        function endCrop() {
+            isCropping = false;
+            document.removeEventListener('mousemove', dragCrop);
+            document.removeEventListener('touchmove', dragCrop);
+            document.removeEventListener('mouseup', endCrop);
+            document.removeEventListener('touchend', endCrop);
+        }
+
+        // Drag & Drop Events
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please select a valid image file.');
+                return;
+            }
+            originalFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                originalImage = new Image();
+                originalImage.onload = () => {
+                    originalPreview.src = e.target.result;
+                    originalPreview.classList.remove('preview-hidden');
+                    cropImage.src = e.target.result;
+                    cropImage.onload = () => {
+                        cropSection.style.display = 'block';
+                        // Default crop to center 50%
+                        const imgRect = cropImage.getBoundingClientRect();
+                        const containerRect = cropContainer.getBoundingClientRect();
+                        const centerX = (imgRect.width / 2) - (imgRect.width * 0.25);
+                        const centerY = (imgRect.height / 2) - (imgRect.height * 0.25);
+                        cropSelection.style.left = `${centerX}px`;
+                        cropSelection.style.top = `${centerY}px`;
+                        cropSelection.style.width = `${imgRect.width * 0.5}px`;
+                        cropSelection.style.height = `${imgRect.height * 0.5}px`;
+                        cropSelection.classList.add('active');
+                    };
+                    originalSize.textContent = `${originalImage.naturalWidth}x${originalImage.naturalHeight}`;
+                    originalInfo.classList.remove('preview-hidden');
+                    cropBtn.disabled = false;
+                };
+                originalImage.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        cropBtn.addEventListener('click', () => {
+            if (!originalImage || !cropSelection.classList.contains('active')) return;
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const selectionRect = cropSelection.getBoundingClientRect();
+            const imgRect = cropImage.getBoundingClientRect();
+            canvas.width = cropWidth;
+            canvas.height = cropHeight;
+            ctx.drawImage(
+                cropImage,
+                (selectionRect.left - imgRect.left) * (originalImage.naturalWidth / imgRect.width),
+                (selectionRect.top - imgRect.top) * (originalImage.naturalHeight / imgRect.height),
+                cropWidth * (originalImage.naturalWidth / imgRect.width),
+                cropHeight * (originalImage.naturalHeight / imgRect.height),
+                0, 0, canvas.width, canvas.height
+            );
+
+            canvas.toBlob((blob) => {
+                croppedBlob = blob;
+                const croppedUrl = URL.createObjectURL(blob);
+                croppedPreview.src = croppedUrl;
+                croppedPreview.classList.remove('preview-hidden');
+                croppedSize.textContent = `${canvas.width}x${canvas.height}`;
+                downloadLink.href = croppedUrl;
+                downloadLink.download = `cropped-image-${canvas.width}x${canvas.height}.jpg`;
+                cropInfo.textContent = `Cropped to ${canvas.width}x${canvas.height} from ${originalImage.naturalWidth}x${originalImage.naturalHeight}`;
+                downloadSection.style.display = 'block';
+            }, 'image/jpeg', 0.95);
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (croppedBlob) URL.revokeObjectURL(croppedPreview.src);
+        });
+    </script>
+</body>
+</html>
