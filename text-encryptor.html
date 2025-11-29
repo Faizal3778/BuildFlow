@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Encryptor/Decryptor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9ff; /* Light blue-tinted white for theme */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 191, 255, 0.1); /* Subtle blue glow */
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #00BFFF; /* Bright blue */
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .input-group, .output-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #00BFFF;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            color: #333;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #0099CC;
+            box-shadow: 0 0 5px rgba(0, 191, 255, 0.3);
+        }
+
+        .method-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .method-group label {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .method-group input[type="radio"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .key-group {
+            display: none;
+            margin: 10px 0;
+        }
+
+        .key-group input {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #00BFFF;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .key-group input:focus {
+            outline: none;
+            border-color: #0099CC;
+        }
+
+        .action-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .action-group button {
+            padding: 10px 16px;
+            border: 2px solid #00BFFF;
+            background: white;
+            color: #00BFFF;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .action-group button:hover {
+            background: #00BFFF;
+            color: white;
+        }
+
+        .encrypt-btn {
+            background: #00BFFF;
+            color: white;
+            border-color: #00BFFF;
+        }
+
+        .encrypt-btn:hover {
+            background: #0099CC;
+            border-color: #0099CC;
+        }
+
+        .decrypt-btn, .clear-btn, .copy-btn {
+            background: #FF6B6B;
+            color: white;
+            border-color: #FF6B6B;
+        }
+
+        .decrypt-btn:hover, .clear-btn:hover, .copy-btn:hover {
+            background: #FF5252;
+            border-color: #FF5252;
+        }
+
+        .output-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .output-group button {
+            align-self: center;
+            min-width: auto;
+            padding: 10px;
+        }
+
+        .error {
+            color: #FF6B6B;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .action-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .action-group button {
+                width: 100%;
+            }
+
+            .output-group button {
+                width: 100%;
+            }
+
+            .method-group label {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Text Encryptor/Decryptor</h1>
+        <div class="input-group">
+            <label for="inputText">Enter your text:</label>
+            <textarea id="inputText" placeholder="Paste or type your text here..."></textarea>
+        </div>
+        <div class="method-group">
+            <label><input type="radio" name="method" value="caesar" checked onchange="toggleKey()"> Caesar Cipher</label>
+            <label><input type="radio" name="method" value="base64" onchange="toggleKey()"> Base64</label>
+            <label><input type="radio" name="method" value="vigenere" onchange="toggleKey()"> Vigenère Cipher</label>
+        </div>
+        <div id="keyGroup" class="key-group">
+            <label id="keyLabel" for="keyInput">Shift/Key:</label>
+            <input type="text" id="keyInput" placeholder="e.g., 3 for Caesar or 'KEY' for Vigenère">
+        </div>
+        <div class="action-group">
+            <button class="encrypt-btn" onclick="processText(true)">Encrypt</button>
+            <button onclick="processText(false)">Decrypt</button>
+            <button class="clear-btn" onclick="clearText()">Clear</button>
+        </div>
+        <div class="output-group">
+            <label for="outputText">Result:</label>
+            <textarea id="outputText" readonly placeholder="Encrypted/decrypted result will appear here..."></textarea>
+            <button class="copy-btn" onclick="copyOutput()">Copy Output</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleKey() {
+            const method = document.querySelector('input[name="method"]:checked').value;
+            const keyGroup = document.getElementById('keyGroup');
+            const keyLabel = document.getElementById('keyLabel');
+            const keyInput = document.getElementById('keyInput');
+
+            if (method === 'base64') {
+                keyGroup.style.display = 'none';
+                return;
+            }
+
+            keyGroup.style.display = 'block';
+            if (method === 'caesar') {
+                keyLabel.textContent = 'Shift (1-25):';
+                keyInput.type = 'number';
+                keyInput.min = '1';
+                keyInput.max = '25';
+                keyInput.placeholder = 'e.g., 3';
+                keyInput.value = '3';
+            } else if (method === 'vigenere') {
+                keyLabel.textContent = 'Key Word:';
+                keyInput.type = 'text';
+                keyInput.placeholder = 'e.g., KEY';
+                keyInput.value = '';
+            }
+        }
+
+        function processText(isEncrypt) {
+            const input = document.getElementById('inputText').value.trim();
+            const output = document.getElementById('outputText');
+            const method = document.querySelector('input[name="method"]:checked').value;
+
+            if (!input) {
+                output.value = '';
+                return;
+            }
+
+            let result = '';
+            let key = document.getElementById('keyInput').value.trim();
+
+            if (method === 'caesar') {
+                if (!key || isNaN(key)) {
+                    alert('Please enter a valid shift number (1-25).');
+                    return;
+                }
+                key = parseInt(key) % 26;
+                result = caesarCipher(input, isEncrypt ? key : (26 - key));
+            } else if (method === 'base64') {
+                result = isEncrypt ? btoa(unescape(encodeURIComponent(input))) : decodeURIComponent(escape(atob(input)));
+            } else if (method === 'vigenere') {
+                if (!key) {
+                    alert('Please enter a key word.');
+                    return;
+                }
+                result = vigenereCipher(input, key, isEncrypt);
+            }
+
+            output.value = result;
+        }
+
+        function caesarCipher(text, shift) {
+            return text.replace(/[a-zA-Z]/g, char => {
+                const start = char <= 'Z' ? 65 : 97;
+                return String.fromCharCode(((char.charCodeAt(0) - start + shift) % 26) + start);
+            });
+        }
+
+        function vigenereCipher(text, key, encrypt) {
+            const result = [];
+            key = key.toUpperCase().replace(/[^A-Z]/g, '');
+            let j = 0;
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                if (/[a-zA-Z]/.test(char)) {
+                    const start = char <= 'Z' ? 65 : 97;
+                    const base = char.toUpperCase().charCodeAt(0) - 65;
+                    const k = key.charCodeAt(j % key.length) - 65;
+                    const shift = encrypt ? k : (26 - k);
+                    result.push(String.fromCharCode(((base + shift) % 26) + start));
+                    j++;
+                } else {
+                    result.push(char);
+                }
+            }
+            return result.join('');
+        }
+
+        function clearText() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('outputText').value = '';
+            document.getElementById('keyInput').value = '';
+        }
+
+        function copyOutput() {
+            const output = document.getElementById('outputText');
+            if (output.value) {
+                navigator.clipboard.writeText(output.value).then(() => {
+                    const btn = event.target;
+                    const originalText = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    btn.style.background = '#51CF66';
+                    btn.style.borderColor = '#51CF66';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.background = '#FF6B6B';
+                        btn.style.borderColor = '#FF6B6B';
+                    }, 2000);
+                }).catch(() => {
+                    output.select();
+                    document.execCommand('copy');
+                });
+            }
+        }
+
+        // Initial setup
+        toggleKey();
+    </script>
+</body>
+</html>
