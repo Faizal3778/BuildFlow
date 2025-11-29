@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remove Duplicate Lines</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9ff; /* Light blue-tinted white for theme */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 191, 255, 0.1); /* Subtle blue glow */
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #00BFFF; /* Bright blue */
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .input-group, .output-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #00BFFF;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            color: #333;
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #0099CC;
+            box-shadow: 0 0 5px rgba(0, 191, 255, 0.3);
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: 2px solid #00BFFF;
+            background: white;
+            color: #00BFFF;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        button:hover {
+            background: #00BFFF;
+            color: white;
+        }
+
+        .remove-btn {
+            background: #00BFFF;
+            color: white;
+            border-color: #00BFFF;
+        }
+
+        .remove-btn:hover {
+            background: #0099CC;
+            border-color: #0099CC;
+        }
+
+        .clear-btn, .copy-btn {
+            background: #FF6B6B;
+            color: white;
+            border-color: #FF6B6B;
+        }
+
+        .clear-btn:hover, .copy-btn:hover {
+            background: #FF5252;
+            border-color: #FF5252;
+        }
+
+        .output-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .output-group button {
+            align-self: center;
+            min-width: auto;
+            padding: 10px;
+        }
+
+        .error {
+            color: #FF6B6B;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .button-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .output-group button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Remove Duplicate Lines</h1>
+        <div class="input-group">
+            <label for="inputText">Enter your text (one line per entry):</label>
+            <textarea id="inputText" placeholder="Paste or type your lines here...&#10;Each line on a new row." oninput="updatePreview()"></textarea>
+        </div>
+        <div class="button-group">
+            <button class="remove-btn" onclick="removeDuplicates()">Remove Duplicates</button>
+            <button class="clear-btn" onclick="clearText()">Clear</button>
+        </div>
+        <div class="output-group">
+            <label for="outputText">Unique lines:</label>
+            <textarea id="outputText" readonly placeholder="Results will appear here..."></textarea>
+            <button class="copy-btn" onclick="copyOutput()">Copy Output</button>
+        </div>
+    </div>
+
+    <script>
+        let isProcessing = false;
+
+        function updatePreview() {
+            // Optional: Preview or disable button if empty, but keep simple as per spec
+        }
+
+        function removeDuplicates() {
+            const input = document.getElementById('inputText').value.trim();
+            const output = document.getElementById('outputText');
+
+            if (!input) {
+                output.value = '';
+                return;
+            }
+
+            // Split into lines, trim each, filter uniques keeping first occurrence
+            const lines = input.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+            const seen = new Set();
+            const uniqueLines = [];
+
+            for (const line of lines) {
+                if (!seen.has(line)) {
+                    seen.add(line);
+                    uniqueLines.push(line);
+                }
+            }
+
+            output.value = uniqueLines.join('\n');
+        }
+
+        function clearText() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('outputText').value = '';
+        }
+
+        function copyOutput() {
+            const output = document.getElementById('outputText');
+            if (output.value) {
+                navigator.clipboard.writeText(output.value).then(() => {
+                    const btn = event.target;
+                    const originalText = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    btn.style.background = '#51CF66';
+                    btn.style.borderColor = '#51CF66';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.background = '#FF6B6B';
+                        btn.style.borderColor = '#FF6B6B';
+                    }, 2000);
+                }).catch(() => {
+                    // Fallback
+                    output.select();
+                    document.execCommand('copy');
+                });
+            }
+        }
+    </script>
+</body>
+</html>
