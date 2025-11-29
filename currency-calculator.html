@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currency Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9ff; /* Light blue-tinted white for theme */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 191, 255, 0.1); /* Subtle blue glow */
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #00BFFF; /* Bright blue */
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #00BFFF;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            color: #333;
+        }
+
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: #0099CC;
+            box-shadow: 0 0 5px rgba(0, 191, 255, 0.3);
+        }
+
+        .currency-row {
+            display: flex;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .currency-row select {
+            flex: 1;
+        }
+
+        .swap-btn {
+            background: #00BFFF;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            width: 44px;
+            height: 44px;
+            margin: 0 5px;
+            transition: background 0.3s;
+        }
+
+        .swap-btn:hover {
+            background: #0099CC;
+        }
+
+        .amount-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .amount-group input {
+            flex: 1;
+        }
+
+        .amount-group select {
+            max-width: 80px;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #00BFFF, #E0F7FF); /* Blue gradient */
+            border-radius: 8px;
+            color: white;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .result.hidden {
+            display: none;
+        }
+
+        .converted-value {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+        }
+
+        .error {
+            color: #FF6B6B;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .loading {
+            color: #00BFFF;
+            font-style: italic;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .currency-row, .amount-group {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+
+            .swap-btn {
+                align-self: center;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Currency Converter</h1>
+        <div class="amount-group">
+            <input type="number" id="amount" min="0" step="0.01" placeholder="Enter amount" oninput="convertCurrency()">
+            <select id="fromCurrency" onchange="convertCurrency()">
+                <!-- Currencies will be populated by JS -->
+            </select>
+        </div>
+        <div class="currency-row">
+            <select id="toCurrency" onchange="convertCurrency()">
+                <!-- Currencies will be populated by JS -->
+            </select>
+            <button class="swap-btn" onclick="swapCurrencies()" title="Swap currencies">↔</button>
+            <select id="dummy" style="display: none;"></select> <!-- Hidden for swap -->
+        </div>
+        <div id="error" class="error"></div>
+        <div id="result" class="result hidden">
+            <span class="converted-value" id="convertedValue">0</span>
+            <p id="rateInfo" class="loading">Loading rates...</p>
+        </div>
+    </div>
+
+    <script>
+        const currencies = ['USD', 'EUR', 'GBP', 'JPY', 'INR', 'AUD', 'CAD', 'CHF', 'CNY', 'SEK'];
+        const apiUrl = 'https://api.exchangerate-api.com/v4/latest/USD'; // Free API, USD base
+
+        let exchangeRates = {};
+
+        // Populate currency selects
+        function populateCurrencies() {
+            const fromSelect = document.getElementById('fromCurrency');
+            const toSelect = document.getElementById('toCurrency');
+            currencies.forEach(currency => {
+                const option1 = new Option(currency, currency);
+                const option2 = new Option(currency, currency);
+                fromSelect.add(option1);
+                toSelect.add(option2);
+            });
+            fromSelect.value = 'USD';
+            toSelect.value = 'EUR';
+        }
+
+        // Fetch exchange rates
+        async function fetchRates() {
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error('API unavailable');
+                const data = await response.json();
+                exchangeRates = data.rates;
+                document.getElementById('rateInfo').textContent = `Rate: 1 ${fromSelect.value} = ${exchangeRates[toSelect.value].toFixed(4)} ${toSelect.value}`;
+                convertCurrency();
+            } catch (error) {
+                document.getElementById('error').textContent = 'Failed to fetch exchange rates. Using last known rates or try again.';
+                document.getElementById('rateInfo').textContent = 'Rates unavailable';
+            }
+        }
+
+        // Convert currency
+        function convertCurrency() {
+            const amount = parseFloat(document.getElementById('amount').value);
+            const from = document.getElementById('fromCurrency').value;
+            const to = document.getElementById('toCurrency').value;
+            const errorDiv = document.getElementById('error');
+            const resultDiv = document.getElementById('result');
+            const convertedSpan = document.getElementById('convertedValue');
+            const rateInfo = document.getElementById('rateInfo');
+
+            errorDiv.textContent = '';
+            if (isNaN(amount) || amount < 0) {
+                resultDiv.classList.add('hidden');
+                if (amount < 0) errorDiv.textContent = 'Please enter a positive amount.';
+                return;
+            }
+
+            if (Object.keys(exchangeRates).length === 0) {
+                resultDiv.classList.remove('hidden');
+                convertedSpan.textContent = amount;
+                rateInfo.textContent = 'Loading rates...';
+                return;
+            }
+
+            const rate = exchangeRates[to] / exchangeRates[from];
+            const converted = (amount * rate).toFixed(2);
+            convertedSpan.textContent = `${converted} ${to}`;
+            rateInfo.textContent = `1 ${from} = ${rate.toFixed(4)} ${to} (Updated: ${new Date().toLocaleDateString()})`;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // Swap currencies
+        function swapCurrencies() {
+            const fromSelect = document.getElementById('fromCurrency');
+            const toSelect = document.getElementById('toCurrency');
+            [fromSelect.value, toSelect.value] = [toSelect.value, fromSelect.value];
+            convertCurrency();
+        }
+
+        // Initialize
+        populateCurrencies();
+        fetchRates();
+    </script>
+</body>
+</html>
