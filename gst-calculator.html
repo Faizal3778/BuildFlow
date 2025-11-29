@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GST Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9ff; /* Light blue-tinted white for theme */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 191, 255, 0.1); /* Subtle blue glow */
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #00BFFF; /* Bright blue */
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #00BFFF;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            color: #333;
+        }
+
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: #0099CC;
+            box-shadow: 0 0 5px rgba(0, 191, 255, 0.3);
+        }
+
+        .calc-type {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .calc-type label {
+            display: flex;
+            align-items: center;
+            margin: 5px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .calc-type input[type="radio"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #00BFFF, #E0F7FF); /* Blue gradient */
+            border-radius: 8px;
+            color: white;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .result.hidden {
+            display: none;
+        }
+
+        .gst-value, .total-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            display: block;
+            margin: 10px 0;
+        }
+
+        .error {
+            color: #FF6B6B;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .calc-type {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .calc-type label {
+                justify-content: center;
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GST Calculator</h1>
+        <div class="input-group">
+            <label for="amount">Amount (₹):</label>
+            <input type="number" id="amount" min="0" step="0.01" oninput="calculateGST()">
+        </div>
+        <div class="input-group">
+            <label for="rate">GST Rate (%):</label>
+            <select id="rate" onchange="calculateGST()">
+                <option value="5">5%</option>
+                <option value="12">12%</option>
+                <option value="18" selected>18%</option>
+                <option value="28">28%</option>
+            </select>
+        </div>
+        <div class="calc-type">
+            <label><input type="radio" name="calcType" value="exclusive" checked onchange="calculateGST()"> Exclusive (Add GST)</label>
+            <label><input type="radio" name="calcType" value="inclusive" onchange="calculateGST()"> Inclusive (Remove GST)</label>
+        </div>
+        <div id="error" class="error"></div>
+        <div id="result" class="result hidden">
+            <div class="gst-value" id="gstValue">GST: ₹0</div>
+            <div class="total-value" id="totalValue">Total: ₹0</div>
+        </div>
+    </div>
+
+    <script>
+        function calculateGST() {
+            const amount = parseFloat(document.getElementById('amount').value);
+            const rate = parseFloat(document.getElementById('rate').value);
+            const calcType = document.querySelector('input[name="calcType"]:checked').value;
+            const errorDiv = document.getElementById('error');
+            const resultDiv = document.getElementById('result');
+            const gstSpan = document.getElementById('gstValue');
+            const totalSpan = document.getElementById('totalValue');
+
+            errorDiv.textContent = '';
+            resultDiv.classList.add('hidden');
+
+            if (isNaN(amount) || amount <= 0) {
+                errorDiv.textContent = 'Please enter a positive amount.';
+                return;
+            }
+
+            let gst, total;
+            if (calcType === 'exclusive') {
+                gst = (amount * rate / 100).toFixed(2);
+                total = (amount + parseFloat(gst)).toFixed(2);
+                gstSpan.textContent = `GST: ₹${parseFloat(gst).toLocaleString()}`;
+                totalSpan.textContent = `Total: ₹${parseFloat(total).toLocaleString()}`;
+            } else {
+                const base = (amount / (1 + rate / 100)).toFixed(2);
+                gst = (amount - parseFloat(base)).toFixed(2);
+                total = amount.toFixed(2);
+                gstSpan.textContent = `GST: ₹${parseFloat(gst).toLocaleString()}`;
+                totalSpan.textContent = `Total: ₹${parseFloat(total).toLocaleString()}`;
+            }
+
+            resultDiv.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
