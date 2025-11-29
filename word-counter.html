@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Counter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9ff; /* Light blue-tinted white for theme */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 191, 255, 0.1); /* Subtle blue glow */
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #00BFFF; /* Bright blue */
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #00BFFF;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            color: #333;
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #0099CC;
+            box-shadow: 0 0 5px rgba(0, 191, 255, 0.3);
+        }
+
+        .controls {
+            margin-bottom: 20px;
+        }
+
+        .reset-btn {
+            padding: 10px 20px;
+            border: 2px solid #FF6B6B;
+            background: white;
+            color: #FF6B6B;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .reset-btn:hover {
+            background: #FF6B6B;
+            color: white;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #00BFFF, #E0F7FF); /* Blue gradient */
+            border-radius: 8px;
+            color: white;
+            text-align: left;
+        }
+
+        .result.hidden {
+            display: none;
+        }
+
+        .count-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .count-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .count-value {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .count-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .count-value {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Word Counter</h1>
+        <div class="input-group">
+            <label for="inputText">Enter your text:</label>
+            <textarea id="inputText" placeholder="Paste or type your text here..." oninput="countText()"></textarea>
+        </div>
+        <div class="controls">
+            <button class="reset-btn" onclick="resetText()">Clear</button>
+        </div>
+        <div id="result" class="result hidden">
+            <div class="count-item">
+                <span>Words:</span>
+                <span class="count-value" id="wordCount">0</span>
+            </div>
+            <div class="count-item">
+                <span>Characters (with spaces):</span>
+                <span class="count-value" id="charWithSpaces">0</span>
+            </div>
+            <div class="count-item">
+                <span>Characters (without spaces):</span>
+                <span class="count-value" id="charNoSpaces">0</span>
+            </div>
+            <div class="count-item">
+                <span>Sentences:</span>
+                <span class="count-value" id="sentenceCount">0</span>
+            </div>
+            <div class="count-item">
+                <span>Paragraphs:</span>
+                <span class="count-value" id="paragraphCount">0</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function countText() {
+            const text = document.getElementById('inputText').value;
+            const resultDiv = document.getElementById('result');
+
+            if (!text.trim()) {
+                resultDiv.classList.add('hidden');
+                return;
+            }
+
+            // Word count: split by whitespace, filter empty
+            const words = text.trim().split(/\s+/).filter(word => word.length > 0).length;
+
+            // Character counts
+            const charsWithSpaces = text.length;
+            const charsNoSpaces = text.replace(/\s/g, '').length;
+
+            // Sentence count: approximate by splitting on . ! ? followed by space or end
+            const sentences = (text.match(/[.!?]+(?=\s|$)/g) || []).length || (text.trim() ? 1 : 0);
+
+            // Paragraph count: split by double newlines
+            const paragraphs = text.split(/\n\n/).filter(p => p.trim().length > 0).length || (text.trim() ? 1 : 0);
+
+            // Update display
+            document.getElementById('wordCount').textContent = words;
+            document.getElementById('charWithSpaces').textContent = charsWithSpaces;
+            document.getElementById('charNoSpaces').textContent = charsNoSpaces;
+            document.getElementById('sentenceCount').textContent = sentences;
+            document.getElementById('paragraphCount').textContent = paragraphs;
+            resultDiv.classList.remove('hidden');
+        }
+
+        function resetText() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('result').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
