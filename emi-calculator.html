@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan EMI Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9ff; /* Light blue-tinted white for theme */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 191, 255, 0.1); /* Subtle blue glow */
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #00BFFF; /* Bright blue */
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #00BFFF;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            color: #333;
+        }
+
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: #0099CC;
+            box-shadow: 0 0 5px rgba(0, 191, 255, 0.3);
+        }
+
+        .tenure-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tenure-group input {
+            flex: 1;
+        }
+
+        .tenure-group select {
+            flex: 1;
+            max-width: 100px;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #00BFFF, #E0F7FF); /* Blue gradient */
+            border-radius: 8px;
+            color: white;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .result.hidden {
+            display: none;
+        }
+
+        .emi-value {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+            color: #fff;
+        }
+
+        .total-payment, .total-interest {
+            font-size: 1.1em;
+            margin: 10px 0;
+        }
+
+        .error {
+            color: #FF6B6B;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .tenure-group {
+                flex-direction: column;
+            }
+
+            .tenure-group select {
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Loan EMI Calculator</h1>
+        <div class="input-group">
+            <label for="principal">Loan Amount (₹):</label>
+            <input type="number" id="principal" min="0" step="1000" oninput="calculateEMI()">
+        </div>
+        <div class="input-group">
+            <label for="interest">Annual Interest Rate (%):</label>
+            <input type="number" id="interest" min="0" step="0.1" oninput="calculateEMI()">
+        </div>
+        <div class="input-group">
+            <label for="tenure">Loan Tenure:</label>
+            <div class="tenure-group">
+                <input type="number" id="tenure" min="1" oninput="calculateEMI()">
+                <select id="tenureUnit" onchange="calculateEMI()">
+                    <option value="months">Months</option>
+                    <option value="years">Years</option>
+                </select>
+            </div>
+        </div>
+        <div id="error" class="error"></div>
+        <div id="result" class="result hidden">
+            <span class="emi-value" id="emiValue">₹0</span>
+            <div class="total-payment">Total Payment: <span id="totalPayment">₹0</span></div>
+            <div class="total-interest">Total Interest: <span id="totalInterest">₹0</span></div>
+        </div>
+    </div>
+
+    <script>
+        function calculateEMI() {
+            const principal = parseFloat(document.getElementById('principal').value);
+            const interest = parseFloat(document.getElementById('interest').value);
+            const tenure = parseInt(document.getElementById('tenure').value);
+            const unit = document.getElementById('tenureUnit').value;
+            const errorDiv = document.getElementById('error');
+            const resultDiv = document.getElementById('result');
+
+            errorDiv.textContent = '';
+            resultDiv.classList.add('hidden');
+
+            if (isNaN(principal) || isNaN(interest) || isNaN(tenure) || principal <= 0 || interest < 0 || tenure <= 0) {
+                if (principal <= 0) errorDiv.textContent = 'Loan amount must be positive.';
+                else if (interest < 0) errorDiv.textContent = 'Interest rate cannot be negative.';
+                else if (tenure <= 0) errorDiv.textContent = 'Tenure must be positive.';
+                else errorDiv.textContent = 'Please enter valid numbers.';
+                return;
+            }
+
+            let n = tenure;
+            if (unit === 'years') {
+                n = tenure * 12;
+            }
+
+            const r = (interest / 100) / 12;
+            let emi;
+            if (r === 0) {
+                emi = principal / n;
+            } else {
+                const power = Math.pow(1 + r, n);
+                emi = principal * r * power / (power - 1);
+            }
+
+            emi = Math.round(emi);
+
+            const totalPayment = emi * n;
+            const totalInterest = totalPayment - principal;
+
+            document.getElementById('emiValue').textContent = `₹${emi.toLocaleString()}`;
+            document.getElementById('totalPayment').textContent = `₹${totalPayment.toLocaleString()}`;
+            document.getElementById('totalInterest').textContent = `₹${totalInterest.toLocaleString()}`;
+            resultDiv.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
