@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific Calculator - Build FLOW</title>
+    <style>
+        :root {
+            --bright-blue: #00BFFF;
+            --light-blue: #E0F7FA;
+            --white: #FFFFFF;
+            --gray: #6C757D;
+            --dark-gray: #343A40;
+            --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-gray);
+            background-color: var(--white);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .calculator {
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+            width: 100%;
+            max-width: 320px;
+        }
+        .display {
+            width: 100%;
+            height: 80px;
+            font-size: 2rem;
+            text-align: right;
+            padding: 0 20px;
+            border: none;
+            background: var(--light-blue);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+        button {
+            height: 60px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            background: var(--white);
+            color: var(--dark-gray);
+            box-shadow: var(--shadow);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+        .btn-operator {
+            background: var(--bright-blue);
+            color: var(--white);
+        }
+        .btn-operator:hover {
+            background: #0099CC;
+        }
+        .btn-function {
+            background: var(--light-blue);
+            color: var(--bright-blue);
+        }
+        .btn-equal {
+            background: var(--bright-blue);
+            color: var(--white);
+            grid-column: span 2;
+        }
+        .btn-clear {
+            background: var(--gray);
+            color: var(--white);
+        }
+        .btn-clear:hover {
+            background: #5a6268;
+        }
+        /* Mobile Responsiveness */
+        @media (max-width: 480px) {
+            .calculator {
+                padding: 15px;
+            }
+            .display {
+                font-size: 1.5rem;
+                height: 60px;
+                padding: 0 10px;
+            }
+            button {
+                height: 50px;
+                font-size: 1rem;
+            }
+            .buttons {
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <input type="text" id="display" class="display" readonly>
+        <div class="buttons">
+            <button class="btn-function" onclick="appendToDisplay('sin(')">sin</button>
+            <button class="btn-function" onclick="appendToDisplay('cos(')">cos</button>
+            <button class="btn-function" onclick="appendToDisplay('tan(')">tan</button>
+            <button class="btn-function" onclick="appendToDisplay('log(')">log</button>
+            <button class="btn-function" onclick="appendToDisplay('sqrt(')">√</button>
+            <button class="btn-clear" onclick="clearDisplay()">C</button>
+            <button class="btn-clear" onclick="deleteLast()">⌫</button>
+            <button class="btn-operator" onclick="appendToDisplay('(')">(</button>
+            <button class="btn-operator" onclick="appendToDisplay(')')">)</button>
+            <button class="btn-operator" onclick="appendToDisplay('/')">/</button>
+            <button onclick="appendToDisplay('7')">7</button>
+            <button onclick="appendToDisplay('8')">8</button>
+            <button onclick="appendToDisplay('9')">9</button>
+            <button class="btn-operator" onclick="appendToDisplay('*')">×</button>
+            <button class="btn-function" onclick="appendToDisplay('^')">^</button>
+            <button onclick="appendToDisplay('4')">4</button>
+            <button onclick="appendToDisplay('5')">5</button>
+            <button onclick="appendToDisplay('6')">6</button>
+            <button class="btn-operator" onclick="appendToDisplay('-')">-</button>
+            <button class="btn-function" onclick="appendToDisplay('!')">!</button>
+            <button onclick="appendToDisplay('1')">1</button>
+            <button onclick="appendToDisplay('2')">2</button>
+            <button onclick="appendToDisplay('3')">3</button>
+            <button class="btn-operator" onclick="appendToDisplay('+')">+</button>
+            <button class="btn-equal" onclick="calculate()" rowspan="2">=</button>
+            <button onclick="appendToDisplay('0')">0</button>
+            <button onclick="appendToDisplay('.')">.</button>
+        </div>
+    </div>
+
+    <script>
+        const display = document.getElementById('display');
+
+        function appendToDisplay(value) {
+            display.value += value;
+        }
+
+        function clearDisplay() {
+            display.value = '';
+        }
+
+        function deleteLast() {
+            display.value = display.value.slice(0, -1);
+        }
+
+        function calculate() {
+            try {
+                // Replace symbols for eval
+                let expression = display.value
+                    .replace(/×/g, '*')
+                    .replace(/÷/g, '/')
+                    .replace(/\^/g, '**');
+                
+                // Handle scientific functions
+                expression = expression
+                    .replace(/sin\(/g, 'Math.sin(')
+                    .replace(/cos\(/g, 'Math.cos(')
+                    .replace(/tan\(/g, 'Math.tan(')
+                    .replace(/log\(/g, 'Math.log10(')
+                    .replace(/sqrt\(/g, 'Math.sqrt(')
+                    .replace(/!/g, 'Math.factorial('); // Note: Math doesn't have factorial, add custom
+
+                // Custom factorial function
+                const factorial = (n) => n <= 1 ? 1 : n * factorial(n - 1);
+                window.Math.factorial = factorial;
+
+                const result = eval(expression);
+                display.value = isNaN(result) ? 'Error' : result.toFixed(8).replace(/\.?0+$/, '');
+            } catch (error) {
+                display.value = 'Error';
+            }
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.key >= '0' && e.key <= '9' || e.key === '.' || e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/') {
+                appendToDisplay(e.key);
+            } else if (e.key === 'Enter') {
+                calculate();
+            } else if (e.key === 'Escape') {
+                clearDisplay();
+            } else if (e.key === 'Backspace') {
+                deleteLast();
+            }
+        });
+    </script>
+</body>
+</html>
