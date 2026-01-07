@@ -3,208 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Age Calculator - Multi-Tool Website</title>
+    <title>Sentence Rephraser Tool</title>
     <style>
-        :root {
-            --primary-blue: #007bff;   /* Bright blue */
-            --light-blue: #e7f1ff;
-            --white: #ffffff;
-            --dark-text: #333333;
-            --gray-text: #666666;
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--light-blue);
-            color: var(--dark-text);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #f8fbff;
+            color: #333;
             min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
 
-        .container {
-            background-color: var(--white);
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.15);
-            padding: 30px;
+        /* Primary bright blue color */
+        :root {
+            --primary-blue: #007bff;
+            --primary-blue-hover: #0056b3;
+            --light-blue: #e3f2fd;
+            --gray-border: #dee2e6;
+            --text-muted: #6c757d;
+        }
+
+        /* Centered card container */
+        .tool-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 123, 255, 0.15);
+            padding: 32px;
             width: 100%;
-            max-width: 500px;
-            text-align: center;
+            max-width: 680px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        h1 {
-            color: var(--primary-blue);
-            margin-bottom: 10px;
+        .tool-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 123, 255, 0.2);
+        }
+
+        /* Title and description */
+        .tool-title {
             font-size: 28px;
+            font-weight: 700;
+            color: #1a1a1a;
+            text-align: center;
+            margin-bottom: 8px;
         }
 
-        p.subtitle {
-            color: var(--gray-text);
-            margin-bottom: 30px;
+        .tool-description {
+            text-align: center;
+            color: var(--text-muted);
             font-size: 16px;
+            margin-bottom: 32px;
         }
 
-        .input-group {
-            margin-bottom: 25px;
-            text-align: left;
+        /* Form elements */
+        .form-group {
+            margin-bottom: 20px;
         }
 
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: var(--dark-text);
+            color: #333;
         }
 
-        input[type="date"] {
+        textarea {
             width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #ccd9ff;
-            border-radius: 8px;
+            min-height: 160px;
+            padding: 14px 16px;
+            border: 2px solid var(--gray-border);
+            border-radius: 12px;
             font-size: 16px;
-            box-sizing: border-box;
-            transition: border-color 0.3s;
+            resize: vertical;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        input[type="date"]:focus {
+        textarea:focus {
             outline: none;
             border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+            box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15);
         }
 
-        .result {
-            margin-top: 30px;
-            padding: 20px;
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--gray-border);
+            border-radius: 12px;
+            font-size: 16px;
+            background-color: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15);
+        }
+
+        /* Button styles */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            font-size: 17px;
+            font-weight: 600;
+            text-align: center;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-blue);
+            color: white;
+            margin-top: 12px;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-blue-hover);
+        }
+
+        .btn-primary:active {
+            transform: translateY(1px);
+        }
+
+        /* Output section */
+        .output-section {
+            margin-top: 32px;
+        }
+
+        .output-box {
             background-color: var(--light-blue);
-            border-radius: 10px;
-            font-size: 18px;
-            min-height: 80px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.4s ease;
+            border: 2px solid #bbdefb;
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 160px;
+            position: relative;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
         }
 
-        .result.visible {
-            opacity: 1;
-        }
-
-        .age-display {
-            font-weight: 700;
-            color: var(--primary-blue);
-            font-size: 24px;
-            margin: 10px 0;
-        }
-
-        .note {
+        .copy-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 8px 16px;
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
             font-size: 14px;
-            color: var(--gray-text);
-            margin-top: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
+        .copy-btn:hover {
+            background-color: var(--primary-blue-hover);
+        }
+
+        /* Responsive adjustments */
         @media (max-width: 480px) {
-            .container {
-                padding: 20px;
+            .tool-card {
+                padding: 24px;
+                border-radius: 12px;
             }
-            h1 {
+
+            .tool-title {
                 font-size: 24px;
+            }
+
+            .tool-description {
+                font-size: 15px;
+            }
+
+            textarea, select {
+                font-size: 16px; /* Prevents zoom on iOS */
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Age Calculator</h1>
-        <p class="subtitle">Enter your birthdate and instantly see your exact age</p>
+    <div class="tool-card">
+        <!-- Tool Title & Description -->
+        <h1 class="tool-title">Sentence Rephraser</h1>
+        <p class="tool-description">Rewrite your sentences or paragraphs with different tones instantly.</p>
 
-        <div class="input-group">
-            <label for="birthdate">Your Birthdate</label>
-            <input type="date" id="birthdate" required>
+        <!-- Input Form -->
+        <div class="form-group">
+            <label for="input-text">Enter your text</label>
+            <textarea id="input-text" placeholder="Type or paste the sentence/paragraph you want to rephrase..." required></textarea>
         </div>
 
-        <div class="result" id="result">
-            <div id="ageText">Please select your birthdate above.</div>
-            <div class="age-display" id="ageDisplay"></div>
+        <div class="form-group">
+            <label for="tone">Choose rephrase tone</label>
+            <select id="tone">
+                <option value="standard">Standard</option>
+                <option value="professional">Professional</option>
+                <option value="casual">Casual</option>
+                <option value="short-clear">Short & Clear</option>
+            </select>
         </div>
 
-        <p class="note">Age is calculated precisely in years, months, and days based on today's date.</p>
+        <button class="btn btn-primary">Rephrase Sentence</button>
+
+        <!-- Output Section -->
+        <div class="output-section">
+            <label>Rephrased result</label>
+            <div class="output-box">
+                Your rephrased text will appear here after clicking the button above.
+                <button class="copy-btn">Copy</button>
+            </div>
+        </div>
     </div>
-
-    <script>
-        const birthdateInput = document.getElementById('birthdate');
-        const resultDiv = document.getElementById('result');
-        const ageText = document.getElementById('ageText');
-        const ageDisplay = document.getElementById('ageDisplay');
-
-        function calculateAge(birthDate) {
-            const today = new Date();
-            const birth = new Date(birthDate);
-
-            if (isNaN(birth.getTime())) {
-                return null;
-            }
-
-            let years = today.getFullYear() - birth.getFullYear();
-            let months = today.getMonth() - birth.getMonth();
-            let days = today.getDate() - birth.getDate();
-
-            // Adjust if days are negative
-            if (days < 0) {
-                months--;
-                // Days in previous month
-                const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-                days += prevMonth.getDate();
-            }
-
-            // Adjust if months are negative
-            if (months < 0) {
-                years--;
-                months += 12;
-            }
-
-            // Handle case where today is birthday (exact years completed)
-            if (today.getMonth() < birth.getMonth() || 
-                (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) {
-                years--;
-            }
-
-            return { years, months, days };
-        }
-
-        function updateAge() {
-            const value = birthdateInput.value;
-            if (!value) {
-                resultDiv.classList.remove('visible');
-                ageText.textContent = 'Please select your birthdate above.';
-                ageDisplay.textContent = '';
-                return;
-            }
-
-            const age = calculateAge(value);
-
-            if (!age) {
-                ageText.textContent = 'Invalid date selected.';
-                ageDisplay.textContent = '';
-                resultDiv.classList.add('visible');
-                return;
-            }
-
-            ageText.textContent = 'You are:';
-            ageDisplay.textContent = `${age.years} years, ${age.months} months, and ${age.days} days old`;
-
-            resultDiv.classList.add('visible');
-        }
-
-        // Real-time update on input change
-        birthdateInput.addEventListener('input', updateAge);
-        birthdateInput.addEventListener('change', updateAge);
-
-        // Optional: Set max date to today
-        const today = new Date().toISOString().split('T')[0];
-        birthdateInput.setAttribute('max', today);
-    </script>
 </body>
 </html>
