@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Age Calculator - Multi-Tool Website</title>
+    <style>
+        :root {
+            --primary-blue: #007bff;   /* Bright blue */
+            --light-blue: #e7f1ff;
+            --white: #ffffff;
+            --dark-text: #333333;
+            --gray-text: #666666;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-blue);
+            color: var(--dark-text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.15);
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--primary-blue);
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        p.subtitle {
+            color: var(--gray-text);
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-text);
+        }
+
+        input[type="date"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ccd9ff;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        input[type="date"]:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: var(--light-blue);
+            border-radius: 10px;
+            font-size: 18px;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .result.visible {
+            opacity: 1;
+        }
+
+        .age-display {
+            font-weight: 700;
+            color: var(--primary-blue);
+            font-size: 24px;
+            margin: 10px 0;
+        }
+
+        .note {
+            font-size: 14px;
+            color: var(--gray-text);
+            margin-top: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Age Calculator</h1>
+        <p class="subtitle">Enter your birthdate and instantly see your exact age</p>
+
+        <div class="input-group">
+            <label for="birthdate">Your Birthdate</label>
+            <input type="date" id="birthdate" required>
+        </div>
+
+        <div class="result" id="result">
+            <div id="ageText">Please select your birthdate above.</div>
+            <div class="age-display" id="ageDisplay"></div>
+        </div>
+
+        <p class="note">Age is calculated precisely in years, months, and days based on today's date.</p>
+    </div>
+
+    <script>
+        const birthdateInput = document.getElementById('birthdate');
+        const resultDiv = document.getElementById('result');
+        const ageText = document.getElementById('ageText');
+        const ageDisplay = document.getElementById('ageDisplay');
+
+        function calculateAge(birthDate) {
+            const today = new Date();
+            const birth = new Date(birthDate);
+
+            if (isNaN(birth.getTime())) {
+                return null;
+            }
+
+            let years = today.getFullYear() - birth.getFullYear();
+            let months = today.getMonth() - birth.getMonth();
+            let days = today.getDate() - birth.getDate();
+
+            // Adjust if days are negative
+            if (days < 0) {
+                months--;
+                // Days in previous month
+                const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+                days += prevMonth.getDate();
+            }
+
+            // Adjust if months are negative
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+
+            // Handle case where today is birthday (exact years completed)
+            if (today.getMonth() < birth.getMonth() || 
+                (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) {
+                years--;
+            }
+
+            return { years, months, days };
+        }
+
+        function updateAge() {
+            const value = birthdateInput.value;
+            if (!value) {
+                resultDiv.classList.remove('visible');
+                ageText.textContent = 'Please select your birthdate above.';
+                ageDisplay.textContent = '';
+                return;
+            }
+
+            const age = calculateAge(value);
+
+            if (!age) {
+                ageText.textContent = 'Invalid date selected.';
+                ageDisplay.textContent = '';
+                resultDiv.classList.add('visible');
+                return;
+            }
+
+            ageText.textContent = 'You are:';
+            ageDisplay.textContent = `${age.years} years, ${age.months} months, and ${age.days} days old`;
+
+            resultDiv.classList.add('visible');
+        }
+
+        // Real-time update on input change
+        birthdateInput.addEventListener('input', updateAge);
+        birthdateInput.addEventListener('change', updateAge);
+
+        // Optional: Set max date to today
+        const today = new Date().toISOString().split('T')[0];
+        birthdateInput.setAttribute('max', today);
+    </script>
+</body>
+</html>
